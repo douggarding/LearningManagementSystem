@@ -10,16 +10,14 @@ namespace LMS.Controllers
   public class CommonController : Controller
   {
     
-    // TODO: Add a protected database context variable once you have scaffolded your team database
-    // for example: 
-    // protected TeamXContext db;
+    // Add a protected database context variable once the team deatabase has been scaffolded
+    protected Models.LMSModels.Team2Context db;
 
     public CommonController()
     {
-      // TODO: Initialize your context once you have scaffolded your team database
-      // for example:
-      // db = new TeamXContext();
-    }
+      // Initialize the context once the team database has been scaffolded
+      db = new Models.LMSModels.Team2Context();
+        }
     
     /*
      * WARNING: This is the quick and easy way to make the controller
@@ -31,28 +29,41 @@ namespace LMS.Controllers
       //       See the lecture on testing
 
       // TODO: Uncomment this once you have created the variable "db"
-    //protected override void Dispose(bool disposing)
-    //{
-    //  if (disposing)
-    //  {
-    //    db.Dispose();
-    //  }
-    //  base.Dispose(disposing);
-    //}
-
-    /*******Begin code to modify********/
-
-
-    /// <summary>
-    /// Retreive a JSON array of all departments from the database.
-    /// Each object in the array should have a field called "name" and "subject",
-    /// where "name" is the department name and "subject" is the subject abbreviation.
-    /// </summary>
-    /// <returns>The JSON array</returns>
-    public IActionResult GetDepartments()
+    protected override void Dispose(bool disposing)
     {
-      // TODO: Do not return this hard-coded array.
-      return Json(new[] { new { name = "None", subject = "NONE" } });
+      if (disposing)
+      {
+        db.Dispose();
+      }
+      base.Dispose(disposing);
+}
+
+/*******Begin code to modify********/
+
+
+/// <summary>
+/// Retreive a JSON array of all departments from the database.
+/// Each object in the array should have a field called "name" and "subject",
+/// where "name" is the department name and "subject" is the subject abbreviation.
+/// </summary>
+/// <returns>The JSON array</returns>
+public IActionResult GetDepartments()
+    {
+            using (db)
+            {
+                // Build the query for getting list of departments
+                var query =
+                from d in db.Departments
+                select new
+                {
+                    // Department Name
+                    name = d.Name,
+                    // TODO: Need a department subject (should we create one in the database?
+                    subject = d.Name.Substring(0, 2)
+                };
+
+                return Json(query.ToArray());
+            }
     }
 
 
