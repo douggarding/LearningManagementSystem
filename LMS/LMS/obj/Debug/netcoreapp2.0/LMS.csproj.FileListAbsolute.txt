@@ -45,3 +45,15 @@ C:\Users\Doug\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.Assembly
 C:\Users\Doug\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.AssemblyInfo.cs
 C:\Users\Doug\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.dll
 C:\Users\Doug\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.pdb
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\bin\Debug\netcoreapp2.0\LMS.deps.json
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\bin\Debug\netcoreapp2.0\LMS.runtimeconfig.json
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\bin\Debug\netcoreapp2.0\LMS.runtimeconfig.dev.json
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\bin\Debug\netcoreapp2.0\LMS.dll
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\bin\Debug\netcoreapp2.0\LMS.pdb
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.csprojAssemblyReference.cache
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.csproj.CoreCompileInputs.cache
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\UserSecretsAssemblyInfo.cs
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.AssemblyInfoInputs.cache
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.AssemblyInfo.cs
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.dll
+C:\Users\dougg\Source\Repos\Team2LMS\LMS\LMS\obj\Debug\netcoreapp2.0\LMS.pdb
