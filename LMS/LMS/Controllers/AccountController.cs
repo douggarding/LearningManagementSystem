@@ -483,13 +483,13 @@ namespace LMS.Controllers
         /// <returns>A unique uID. This uID must not be used by anyone else</returns>
         public string CreateNewUser(string fName, string lName, DateTime DOB, string SubjectAbbrev, string role)
         {
-            // List for storing all user ID's
-            List<string> userIDs = new List<string>();
             // String for new uID to be given new user
             string newIDNumber;
 
             using (db)
             {
+                // List for storing all user ID's
+                List<string> userIDs = new List<string>();
 
                 // Get the uID's from the Students
                 var uIDs =
