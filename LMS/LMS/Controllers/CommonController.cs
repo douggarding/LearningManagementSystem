@@ -101,7 +101,22 @@ namespace LMS.Controllers
         /// <returns></returns>
         public IActionResult GetClassOfferings(string subject, int number)
         {
-            return null;
+            var query =
+                from classes in db.Classes
+                join courses in db.Courses
+                on classes.Offering equals courses.CatalogId
+                select new
+                {
+                    season = classes.Season,
+                    year = classes.Year,
+                    location = classes.Location,
+                    start = classes.Start,
+                    end = classes.End,
+                    fname = classes.TaughtBy
+                };
+
+            return Json(query.ToArray());
+
         }
 
         /// <summary>
