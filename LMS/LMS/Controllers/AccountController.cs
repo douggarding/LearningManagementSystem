@@ -479,15 +479,15 @@ namespace LMS.Controllers
         /// <param name="lName">Last Name</param>
         /// <param name="DOB">Date of Birth</param>
         /// <param name="SubjectAbbrev">The department the user belongs to (professors and students only)</param>
-        /// <param name="SubjectAbbrev">The user's role: one of "Administrator", "Professor", "Student"</param> 
+        /// <param name="role">The user's role: one of "Administrator", "Professor", "Student"</param> 
         /// <returns>A unique uID. This uID must not be used by anyone else</returns>
         public string CreateNewUser(string fName, string lName, DateTime DOB, string SubjectAbbrev, string role)
         {
-
             // List for storing all user ID's
             List<string> userIDs = new List<string>();
+            // String for new uID to be given new user
+            string newIDNumber;
 
-            // Get list of existing uID's
             using (db)
             {
 
@@ -517,12 +517,57 @@ namespace LMS.Controllers
                 {
                     userIDs.Add(uID);
                 }
+
+                // Create unique uID that doesn't match any existing uID's
+                newIDNumber = getNextUserID(userIDs);
+
+                // Add the user to the database
+                if (role.Equals("Student"))
+                {
+                    // Set up the student
+                    Models.LMSModels.Students student = new Models.LMSModels.Students();
+                    student.FirstName = fName;
+                    student.LastName = lName;
+                    student.DateOfBirth = DOB;
+                    student.Major = SubjectAbbrev;
+                    student.UId = newIDNumber;
+                    student.Password = "";
+
+                    // Insert the student into the database
+                    db.Students.Add(student);
+                    db.SaveChanges();
+                }
+                else if (role.Equals("Professor"))
+                {
+                    // Set up the professor
+                    Models.LMSModels.Professors professor = new Models.LMSModels.Professors();
+                    professor.FirstName = fName;
+                    professor.LastName = lName;
+                    professor.DateOfBirth = DOB;
+                    professor.WorksIn = SubjectAbbrev;
+                    professor.UId = newIDNumber;
+                    professor.Password = "";
+
+                    // Insert the professor into the database
+                    db.Professors.Add(professor);
+                    db.SaveChanges();
+                }
+                else
+                {
+                    // Set up the administrator
+                    Models.LMSModels.Administrators admin = new Models.LMSModels.Administrators();
+                    admin.FirstName = fName;
+                    admin.LastName = lName;
+                    admin.DateOfBirth = DOB;
+                    admin.UId = newIDNumber;
+                    admin.Password = "";
+
+                    // Insert the professor into the database
+                    db.Administrators.Add(admin);
+                    db.SaveChanges();
+                }
             }
 
-            // Create unique uID that doesn't match any existing uID's
-            string newIDNumber = getNextUserID(userIDs);
-
-            // TODO: Add user to the database?
 
             // Return the uID
             return newIDNumber;
@@ -541,6 +586,15 @@ namespace LMS.Controllers
         /// <returns>new ID to be used in the creation of a new user</returns>
         private string getNextUserID(List<string> userIDs)
         {
+            // Value to return
+            string nextID = "";
+
+            // FOR NOW, GENERATE A RANDOM NUMBER
+            Random rnd = new Random();
+            int randomID = rnd.Next(0, 9999999);
+            nextID += randomID;
+
+            /*
             // Turn the user ID's into an ordered list of just numbers 
             List<int> userIDNumbers = new List<int>();
             for (int i = 0; i < userIDs.Count; i++)
@@ -551,8 +605,7 @@ namespace LMS.Controllers
             }
             userIDNumbers.Sort();
 
-            // Value to return
-            string nextID = "";
+
 
             // If there are no gaps in the uID numbers, use next sequential number
             if(userIDNumbers[userIDNumbers.Count-1] == userIDNumbers.Count-1)
@@ -577,6 +630,7 @@ namespace LMS.Controllers
             {
                 nextID = "0" + nextID;
             }
+            */
 
             // Add 'u' to the front of ID and return
             return "u" + nextID;

@@ -15,7 +15,7 @@ namespace LMS.Models.LMSModels
         public string LastName { get; set; }
         public string Password { get; set; }
         public string WorksIn { get; set; }
-        public DateTime DOB { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
         public Departments WorksInNavigation { get; set; }
         public ICollection<Classes> Classes { get; set; }

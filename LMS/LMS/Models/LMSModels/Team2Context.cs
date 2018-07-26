@@ -49,7 +49,7 @@ namespace LMS.Models.LMSModels
                     .IsRequired()
                     .HasMaxLength(20);
 
-                entity.Property(e => e.DOB).HasColumnType("datetime");
+                entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<AssignmentCategories>(entity =>
@@ -260,7 +260,7 @@ namespace LMS.Models.LMSModels
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("WorksIn");
 
-                entity.Property(e => e.DOB).HasColumnType("datetime");
+                entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<Students>(entity =>
@@ -296,7 +296,7 @@ namespace LMS.Models.LMSModels
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("Major");
 
-                entity.Property(e => e.DOB).HasColumnType("datetime");
+                entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<Submissions>(entity =>
