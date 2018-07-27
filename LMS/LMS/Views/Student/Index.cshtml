@@ -6,6 +6,7 @@
 
 <h4 id="StudentInfo"></h4>
 <h4 id="Major"></h4>
+<h4 id="GPA"></h4>
 
 <div class="col-md-12">
   <h4>My Classes</h4>
@@ -27,10 +28,6 @@
   <script type="text/javascript">
 
     LoadData();
-
-    //$(function () {
-    //  LoadData();
-    //});
 
     function LoadData() {
 
@@ -64,6 +61,26 @@
 
       var newBody = document.createElement("tbody");
 
+
+      $.ajax({
+        type: 'POST',
+        url: '@Url.Action("GetGPA", "Student")',
+        dataType: 'json',
+        data: { uid: '@User.Identity.Name' },
+        success: function (data, status) {
+
+          GPA.innerText = "GPA: " + Number.parseFloat(data.gpa).toFixed(1);
+
+        },
+        error: function (ex) {
+          var r = jQuery.parseJSON(response.responseText);
+          alert("Message: " + r.Message);
+          alert("StackTrace: " + r.StackTrace);
+          alert("ExceptionType: " + r.ExceptionType);
+        }
+        });
+
+
       $.ajax({
         type: 'POST',
         url: '@Url.Action("GetMyClasses", "Student")',
@@ -76,7 +93,7 @@
           $.each(data, function (i, item) {
 
             var tr = document.createElement("tr");
-            
+
             var td = document.createElement("td");
             td.appendChild(document.createTextNode(item.subject + item.number));
             tr.appendChild(td);
@@ -99,8 +116,9 @@
             newBody.appendChild(tr);
 
           });
+
           tbl.appendChild(newBody);
-          
+
         },
         error: function (ex) {
           var r = jQuery.parseJSON(response.responseText);
@@ -118,4 +136,3 @@
 
   </script>
 
-}
