@@ -163,7 +163,39 @@ namespace LMS.Controllers
         /// <returns>The assignment contents</returns>
         public IActionResult GetAssignmentContents(string subject, int num, string season, int year, string category, string asgname)
         {
-            return null;
+            // SQL query that got all of the desired values:
+            //
+            // SELECT Department, Number, Season, Year, assCat.Name, ass.Name 
+            // FROM Team2.Assignments ass JOIN Team2AssignmentCategories assCat
+            // Join Team2.Classes class JOIN Team2.Courses course
+            // WHERE ass.Category = assCat.CategoryID
+            // AND assCat.class = class.classID
+            // AND class.offering = course.catalogID
+
+            var query =
+                from assgn in db.Assignments
+                where assgn.Name.Equals(asgname)
+                join assgnCat in db.AssignmentCategories on assgn.Category equals assgnCat.CategoryId into firstJoin
+                from j1 in firstJoin
+                where j1.Name.Equals(category)
+                join cl in db.Classes on j1.Class equals cl.ClassId into secondJoin
+                from j2 in secondJoin
+                where j2.Season.Equals(season) & j2.Year.Equals(year)
+                join co in db.Courses on j2.Offering equals co.CatalogId into thirdJoin
+                from j3 in thirdJoin
+                where j3.Number.Equals(num) & j3.Department.Equals(subject)
+                select new
+                {
+                    subject = j3.Department,
+                    num = j3.Number,
+                    season = j2.Season,
+                    year = j2.Year,
+                    category = j1.Name,
+                    asgname = assgn.Name
+                };
+
+            return Content(query.ToString());
+
         }
 
         /// <summary>

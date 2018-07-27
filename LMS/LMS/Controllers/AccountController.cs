@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Web;
+﻿using LMS.Models;
+using LMS.Models.AccountViewModels;
+using LMS.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using LMS.Models;
-using LMS.Models.AccountViewModels;
-using LMS.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 
 namespace LMS.Controllers
@@ -491,32 +489,19 @@ namespace LMS.Controllers
                 // List for storing all user ID's
                 List<string> userIDs = new List<string>();
 
-                // Get the uID's from the Students
-                var uIDs =
-                from user in db.Students
-                select user.UId;
-                foreach (string uID in uIDs)
+                var infoQuery =
+                    (from stu in db.Students
+                     select stu.UId)
+                        .Union
+                        (from prof in db.Professors
+                         select prof.UId)
+                           .Union(from adm in db.Administrators
+                                  select adm.UId);
+                foreach(string uID in infoQuery)
                 {
                     userIDs.Add(uID);
                 }
 
-                // Get the uID's from the Professors
-                uIDs =
-                from user in db.Professors
-                select user.UId;
-                foreach (string uID in uIDs)
-                {
-                    userIDs.Add(uID);
-                }
-
-                // Get the uID's from the Administrators
-                uIDs =
-                from user in db.Administrators
-                select user.UId;
-                foreach (string uID in uIDs)
-                {
-                    userIDs.Add(uID);
-                }
 
                 // Create unique uID that doesn't match any existing uID's
                 newIDNumber = getNextUserID(userIDs);
