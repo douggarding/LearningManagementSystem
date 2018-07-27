@@ -574,7 +574,7 @@ namespace LMS.Controllers
         }
 
         /// <summary>
-        /// Takes a list of uID's and finds the returns the smallest numerical ID value that
+        /// Takes a list of uID's and finds then returns the smallest numerical ID value that
         /// doesn't exist in the list. If there is no missing numbers between the first and last
         /// ID, then the next sequential number after the last is returned. Automatically fills in 
         /// any zeros. 
