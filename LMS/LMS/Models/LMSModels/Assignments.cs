@@ -15,7 +15,7 @@ namespace LMS.Models.LMSModels
         public DateTime? Due { get; set; }
         public string Contents { get; set; }
         public int? Points { get; set; }
-        public sbyte SubmissionType { get; set; }
+        public bool SubmissionType { get; set; }
         public int Category { get; set; }
 
         public AssignmentCategories CategoryNavigation { get; set; }
