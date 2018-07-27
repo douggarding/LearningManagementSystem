@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -67,7 +68,7 @@ namespace LMS.Controllers
     /// <returns>The JSON array</returns>
     public IActionResult GetMyClasses(string uid)
     {
-      var query = 
+      var query =
         from E in db.Enrolled
         where E.Student == uid
         join Cl in db.Classes
@@ -75,10 +76,15 @@ namespace LMS.Controllers
         from j1 in join1
         join Co in db.Courses
         on j1.Offering equals Co.CatalogId
-        select new {
-        subject = Co.Department, number = Co.Number,
-        name = Co.Name, season = j1.Season, year = j1.Year,
-        grade = E.Grade == null? "--":E.Grade};
+        select new
+        {
+          subject = Co.Department,
+          number = Co.Number,
+          name = Co.Name,
+          season = j1.Season,
+          year = j1.Year,
+          grade = E.Grade == null ? "--" : E.Grade
+        };
 
       return Json(query.ToArray());
     }
@@ -99,7 +105,29 @@ namespace LMS.Controllers
     /// <returns>The JSON array</returns>
     public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
     {
-      return null;
+      var query =
+        from S in db.Students
+        where S.UId == uid
+        join E in db.Enrolled
+        on uid equals E.Student into join1
+        from j1 in join1
+        where j1.Class == num
+        join Cl in db.Classes
+        on j1.Class equals Cl.ClassId into join2
+        from j2 in join2
+        where j2.Season == season && j2.Year == year
+        join AC in db.AssignmentCategories
+        on j2.ClassId equals AC.Class into join3
+        from j3 in join3
+        join ASG in db.Assignments
+        on j3.CategoryId equals ASG.Category into join4
+        from j4 in join4
+        join SUB in db.Submissions
+        on j4.AssignmentId equals SUB.Assignment
+        where uid == SUB.Student
+        select new { aname = j4.Name, cname = j3.Name, due = j4.Due, score = j4.Points };
+
+      return Json(query.ToArray());
     }
 
 
@@ -119,7 +147,43 @@ namespace LMS.Controllers
     /// <returns>A JSON object containing {success = true/false}</returns>
     public IActionResult SubmitAssignmentText(string subject, int num, string season, int year, string category, string asgname, string uid, string contents)
     {
-      return null;
+      bool success = false;
+      Submissions new_sub = new Submissions();
+      new_sub.Score = 0;
+      new_sub.TextContents = contents;
+      new_sub.Time = DateTime.Now;
+      new_sub.Student = uid;
+      var query = 
+        from Co in db.Courses
+        where Co.Department == subject && Co.Number == num
+        join Cl in db.Classes
+        on Co.CatalogId equals Cl.Offering into join1
+        from j1 in join1
+        where j1.Year == year && j1.Season == season
+        join AC in db.AssignmentCategories
+        on j1.ClassId equals AC.Class into join2
+        from j2 in join2
+        where j2.Name == category
+        join ASG in db.Assignments
+        on j2.CategoryId equals ASG.Category into join3
+        from j3 in join3
+        where j3.Name == asgname
+        select j3.AssignmentId;
+
+      if(query.Count() > 1)
+      {
+        return Json(success);
+      }
+      new_sub.Assignment = query.First();
+      db.Submissions.Add(new_sub);
+      try
+      {
+        db.SaveChanges();
+        success = true;
+      }
+      catch { }
+
+      return Json( success);
     }
 
     /// <summary>
