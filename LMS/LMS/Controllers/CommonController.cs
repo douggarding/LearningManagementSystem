@@ -1,9 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LMS.Controllers
 {
@@ -92,7 +89,8 @@ namespace LMS.Controllers
                 {
                     subject = d.DId,
                     dname = d.Name,
-                    courses = from course in db.Courses where course.Department.Equals(d.DId)
+                    courses = from course in db.Courses
+                              where course.Department.Equals(d.DId)
                               select new
                               {
                                   number = course.Number,
@@ -130,7 +128,8 @@ namespace LMS.Controllers
             // Also, as specified in our database, none of the values from these tables
             // can contain null values, so we aren't accounting for them here.
             var query =
-                from co in db.Courses where co.Department.Contains(subject) & co.Number.Equals(number)
+                from co in db.Courses
+                where co.Department.Contains(subject) & co.Number.Equals(number)
                 join cl in db.Classes on co.CatalogId equals cl.Offering into firstJoin
                 from fj in firstJoin
                 join p in db.Professors on fj.TaughtBy equals p.UId
@@ -232,7 +231,65 @@ namespace LMS.Controllers
         /// <returns>The user JSON object or an object containing {success: false} if the user doesn't exist</returns>
         public IActionResult GetUser(string uid)
         {
-            return null;
+
+            // Try getting the information if this uID is for a STUDENT.
+            var studentQuery =
+                from stu in db.Students
+                where stu.UId.Equals(uid)
+                join dep in db.Departments on stu.Major equals dep.DId
+                select new
+                {
+                    fname = stu.FirstName,
+                    lname = stu.LastName,
+                    uid = stu.UId,
+                    department = dep.Name
+                };
+
+            // If the uID was in fact for a student, return their info.
+            if (studentQuery.Count() == 1)
+            {
+                return Json(studentQuery);
+            }
+
+            // Try getting the information if this uID is for a PROFESSOR.
+            var professorQuery =
+                from prof in db.Professors
+                where prof.UId.Equals(uid)
+                join dep in db.Departments on prof.WorksIn equals dep.DId
+                select new
+                {
+                    fname = prof.FirstName,
+                    lname = prof.LastName,
+                    uid = prof.UId,
+                    department = dep.Name
+                };
+
+            // If the uID was in fact for a student, return their info.
+            if (professorQuery.Count() == 1)
+            {
+                return Json(professorQuery);
+            }
+
+            // Try getting the information if this uID is for an ADMINISTRATOR.
+            var administratorQuery =
+                from admin in db.Administrators
+                select new
+                {
+                    fname = admin.FirstName,
+                    lname = admin.LastName,
+                    uid = admin.UId,
+                };
+
+            // If the uID was in fact for a student, return their info.
+            if (administratorQuery.Count() == 1)
+            {
+                return Json(professorQuery);
+            }
+
+            // If we get this far in the code, that means the user ID doesn't exist
+            var noUser = new { success = false };
+            return Json(noUser);
+
         }
 
 
