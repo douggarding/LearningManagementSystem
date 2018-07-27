@@ -245,7 +245,71 @@ namespace LMS.Controllers
     /// <returns>A JSON object containing a single field called "gpa" with the number value</returns>
     public IActionResult GetGPA(string uid)
     {
-      return null;
+      var grades =
+        from E in db.Enrolled
+        where E.Student == uid
+        join Cl in db.Classes
+        on E.Class equals Cl.ClassId into join1
+        from j1 in join1
+        join Co in db.Courses
+        on j1.Offering equals Co.CatalogId
+        select new
+        {
+          grade = E.Grade == null ? "--" : E.Grade
+        };
+      double total = 0;
+      int count = 0;
+      foreach(var i in grades)
+      {
+        if( i.ToString() != "--")
+        {
+          count++;
+          switch (i.ToString())
+          {
+            case "A":
+              total += 4;
+              break;
+            case "A-":
+              total += 3.7;
+              break;
+            case "B+":
+              total += 3.3;
+              break;
+            case "B":
+              total += 3;
+              break;
+            case "B-":
+              total += 2.7;
+              break;
+            case "C+":
+              total += 2.3;
+              break;
+            case "C":
+              total += 2;
+              break;
+            case "C-":
+              total += 1.7;
+              break;
+            case "D+":
+              total += 1.3;
+              break;
+            case "D":
+              total += 1;
+              break;
+            case "D-":
+              total += 0.7;
+              break;
+            case "E":
+              break;
+          }
+        }
+      }
+      double gpa = 0;
+      if (count > 0)
+      {
+        gpa = total / count;
+      }
+      return Json(gpa);
     }
   }
 }

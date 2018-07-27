@@ -13244,23 +13244,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Doug\\.nuget\\packages\\": {},
+    "C:\\Users\\Westley\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Doug\\Source\\Repos\\Team2LMS\\LMS\\LMS\\LMS.csproj",
+      "projectUniqueName": "C:\\Users\\Westley\\Source\\Repos\\Team2LMS\\LMS\\LMS\\LMS.csproj",
       "projectName": "LMS",
-      "projectPath": "C:\\Users\\Doug\\Source\\Repos\\Team2LMS\\LMS\\LMS\\LMS.csproj",
-      "packagesPath": "C:\\Users\\Doug\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Doug\\Source\\Repos\\Team2LMS\\LMS\\LMS\\obj\\",
+      "projectPath": "C:\\Users\\Westley\\Source\\Repos\\Team2LMS\\LMS\\LMS\\LMS.csproj",
+      "packagesPath": "C:\\Users\\Westley\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Westley\\Source\\Repos\\Team2LMS\\LMS\\LMS\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\Doug\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Westley\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
