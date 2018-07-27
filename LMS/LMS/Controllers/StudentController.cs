@@ -109,5 +109,32 @@ namespace LMS.Controllers
       return null;
     }
 
+    /// <summary>
+    /// Enrolls a student in a class.
+    /// </summary>
+    /// <param name="subject">The department subject abbreviation</param>
+    /// <param name="num">The course number</param>
+    /// <param name="season">The season part of the semester</param>
+    /// <param name="year">The year part of the semester</param>
+    /// <param name="uid">The uid of the student</param>
+    /// <returns>A JSON object containing {success = {true/false}. False if the student is already enrolled in the class.</returns>
+    public IActionResult Enroll(string subject, int num, string season, int year, string uid)
+    {
+      return null;
+    }
+
+    /// <summary>
+    /// Calculates a student's GPA
+    /// A student's GPA is determined by the grade-point representation of the average grade in all their classes.
+    /// If a student does not have a grade in a class ("--"), that class is not counted in the average.
+    /// Otherwise, the point-value of a letter grade for the UofU is determined by the table on this page:
+    /// https://advising.utah.edu/academic-standards/gpa-calculator-new.php
+    /// </summary>
+    /// <param name="uid">The uid of the student</param>
+    /// <returns>A JSON object containing a single field called "gpa" with the number value</returns>
+    public IActionResult GetGPA(string uid)
+    {
+      return null;
+    }
   }
 }

@@ -22,7 +22,10 @@ namespace LMS.Controllers
       {
         return Redirect("/Professor/Index");
       }
-
+      if(User.IsInRole("Administrator"))
+      {
+        return Redirect("/Administrator/Index");
+      }
       return View();
     }
 
