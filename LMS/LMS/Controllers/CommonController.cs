@@ -66,31 +66,38 @@ namespace LMS.Controllers
 
 
         /// <summary>
-/// Returns a JSON array representing the course catalog.
-/// Each object in the array should have the following fields:
-/// "subject": The subject abbreviation, (e.g. "CS")
-/// "dname": The department name, as in "Computer Science"
-/// "courses": An array of JSON objects representing the courses in the department.
-///            Each field in this inner-array should have the following fields:
-///            "number": The course number (e.g. 6016)
-///            "cname": The course name (e.g. "Database Systems and Applications")
-/// </summary>
-/// <returns>The JSON array</returns>
-// Example JSON string:
-//[{"subject":"ART","dname":"Art","courses":[{"number":2200,"cname":"Beginning Drawing"},
-//{"number":2060,"cname":"Digital Photography"}]},{"subject":"CS","dname":"Computer Science",
-//"courses":[{"number":1410,"cname":"Object-Oriented Programming"},{"number":6016,"cname":"Database
- //Systems and Applications"},{"number":2420,"cname":"Introduction to Algorithms and Data Structures"},
- //{"number":3500,"cname":"Software Practice"},{"number":3810,"cname":"Computer Organization"},
- //{"number":5300,"cname":"Artificial Intelligence"}]}
+        /// Returns a JSON array representing the course catalog.
+        /// Each object in the array should have the following fields:
+        /// "subject": The subject abbreviation, (e.g. "CS")
+        /// "dname": The department name, as in "Computer Science"
+        /// "courses": An array of JSON objects representing the courses in the department.
+        ///            Each field in this inner-array should have the following fields:
+        ///            "number": The course number (e.g. 6016)
+        ///            "cname": The course name (e.g. "Database Systems and Applications")
+        /// </summary>
+        /// <returns>The JSON array</returns>
+        /// Example JSON string:
+        /// [{"subject":"ART","dname":"Art","courses":[{"number":2200,"cname":"Beginning Drawing"},
+        /// {"number":2060,"cname":"Digital Photography"}]},{"subject":"CS","dname":"Computer Science",
+        /// "courses":[{"number":1410,"cname":"Object-Oriented Programming"},{"number":6016,"cname":"Database
+        /// Systems and Applications"},{"number":2420,"cname":"Introduction to Algorithms and Data Structures"},
+        /// {"number":3500,"cname":"Software Practice"},{"number":3810,"cname":"Computer Organization"},
+        /// {"number":5300,"cname":"Artificial Intelligence"}]}
         public IActionResult GetCatalog()
         {
+
             var query =
-                from c in db.Courses
+                from d in db.Departments
                 select new
                 {
-                    number = c.Number,
-                    cname = c.Name
+                    subject = d.DId,
+                    dname = d.Name,
+                    courses = from course in db.Courses where course.Department.Equals(d.DId)
+                              select new
+                              {
+                                  number = course.Number,
+                                  cname = course.Name
+                              }
                 };
 
             return Json(query.ToArray());
