@@ -212,6 +212,40 @@ namespace LMS.Controllers
         /// <returns>The submission text</returns>
         public IActionResult GetSubmissionText(string subject, int num, string season, int year, string category, string asgname, string uid)
         {
+            // Generated a SQL query that works:
+            // SELECT TextContents FROM Team2.Students stu
+            // JOIN Team2.Enrolled enr ON stu.uID = enr.Student
+            // JOIN Team2.Classes cla ON cla.classID = enr.Class
+            // JOIN Team2.AssignmentCategories assctg ON assctg.Class = cla.ClassID
+            // JOIN Team2.Assignments assgn ON assgn.Category = assctg.categoryID
+            // JOIN Team2.Submissions subs ON subs.Assignment = assgn.assignmentID
+            // WHERE uID = "u0000002";
+
+            /* NEEDS TO BE MODIFIED FOR THE ABOVE QUERY:
+            var query =
+                from assgn in db.Assignments
+                where assgn.Name.Equals(asgname)
+                join assgnCat in db.AssignmentCategories on assgn.Category equals assgnCat.CategoryId into firstJoin
+                from j1 in firstJoin
+                where j1.Name.Equals(category)
+                join cl in db.Classes on j1.Class equals cl.ClassId into secondJoin
+                from j2 in secondJoin
+                where j2.Season.Equals(season) & j2.Year.Equals(year)
+                join co in db.Courses on j2.Offering equals co.CatalogId into thirdJoin
+                from j3 in thirdJoin
+                where j3.Number.Equals(num) & j3.Department.Equals(subject)
+                select new
+                {
+                    subject = j3.Department,
+                    num = j3.Number,
+                    season = j2.Season,
+                    year = j2.Year,
+                    category = j1.Name,
+                    asgname = assgn.Name
+                };
+                */
+
+            //return Content(query.ToString());
             return null;
         }
 
