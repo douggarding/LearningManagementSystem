@@ -101,18 +101,30 @@ namespace LMS.Controllers
         /// <returns></returns>
         public IActionResult GetClassOfferings(string subject, int number)
         {
+
+            // SQL query that got all of the desired values (with the exception of specifying
+            // a subject and number):
+            //
+            // SELECT Season, Year, Location, Start, End, FirstName, LastName FROM
+            // Team2.Classes c1 join Team2.Courses co join Team2.Professors p
+            // WHERE c1.offering = co.catalogID AND c1.TaughtBy = p.uID
+            //
+            // Also, as specified in our database, none of the values from these tables
+            // can contain null values, so we aren't accounting for them here.
             var query =
-                from classes in db.Classes
-                join courses in db.Courses
-                on classes.Offering equals courses.CatalogId
+                from co in db.Courses where co.Department.Contains(subject) & co.Number.Equals(number)
+                join cl in db.Classes on co.CatalogId equals cl.Offering into firstJoin
+                from fj in firstJoin
+                join p in db.Professors on fj.TaughtBy equals p.UId
                 select new
                 {
-                    season = classes.Season,
-                    year = classes.Year,
-                    location = classes.Location,
-                    start = classes.Start,
-                    end = classes.End,
-                    fname = classes.TaughtBy
+                    season = fj.Season,
+                    year = fj.Year,
+                    location = fj.Location,
+                    start = fj.Start,
+                    end = fj.End,
+                    fname = p.FirstName,
+                    lname = p.LastName
                 };
 
             return Json(query.ToArray());
