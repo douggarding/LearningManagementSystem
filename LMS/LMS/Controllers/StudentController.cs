@@ -153,7 +153,7 @@ namespace LMS.Controllers
       new_sub.TextContents = contents;
       new_sub.Time = DateTime.Now;
       new_sub.Student = uid;
-      var query = 
+      var query =
         from Co in db.Courses
         where Co.Department == subject && Co.Number == num
         join Cl in db.Classes
@@ -170,10 +170,6 @@ namespace LMS.Controllers
         where j3.Name == asgname
         select j3.AssignmentId;
 
-      if(query.Count() > 1)
-      {
-        return Json(success);
-      }
       new_sub.Assignment = query.First();
       db.Submissions.Add(new_sub);
       try
@@ -183,7 +179,7 @@ namespace LMS.Controllers
       }
       catch { }
 
-      return Json( success);
+      return Json(success);
     }
 
     /// <summary>
@@ -197,7 +193,45 @@ namespace LMS.Controllers
     /// <returns>A JSON object containing {success = {true/false}. False if the student is already enrolled in the class.</returns>
     public IActionResult Enroll(string subject, int num, string season, int year, string uid)
     {
-      return null;
+      bool success = false;
+      var query =
+        from Co in db.Courses
+        where Co.Number == num && Co.Department == subject
+        join Cl in db.Classes
+        on Co.CatalogId equals Cl.Offering into join1
+        from j1 in join1
+        where j1.Season == season && j1.Year == year
+        join E in db.Enrolled
+        on j1.ClassId equals E.Class into join2
+        from j2 in join2
+        select j2.Student;
+
+      if (query.Contains(uid))
+      {
+        return Json(success);
+      }
+
+      Enrolled new_enr = new Enrolled();
+      new_enr.Student = uid;
+      var query2 =
+        from Co in db.Courses
+        where Co.Number == num && Co.Department == subject
+        join Cl in db.Classes
+        on Co.CatalogId equals Cl.Offering into join1
+        from j1 in join1
+        where j1.Season == season && j1.Year == year
+        select j1.ClassId;
+
+      new_enr.Class = query2.First();
+      db.Enrolled.Add(new_enr);
+      try
+      {
+        db.SaveChanges();
+        success = true;
+      }
+      catch { }
+
+      return Json(success);
     }
 
     /// <summary>
