@@ -159,7 +159,6 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}</returns>
         public IActionResult SubmitAssignmentText(string subject, int num, string season, int year, string category, string asgname, string uid, string contents)
         {
-            bool success = false;
             Submissions new_sub = new Submissions();
             new_sub.Score = 0;
             new_sub.TextContents = contents;
@@ -187,11 +186,13 @@ namespace LMS.Controllers
             try
             {
                 db.SaveChanges();
-                success = true;
+                var successfullySubmitted = new { success = true };
+                return (Json(successfullySubmitted));
             }
             catch { }
 
-            return Json(success);
+            var submissionFailure = new { success = false };
+            return Json(submissionFailure);
         }
 
         /// <summary>

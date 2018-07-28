@@ -162,27 +162,35 @@ namespace LMS.Controllers
         /// <returns>The assignment contents</returns>
         public IActionResult GetAssignmentContents(string subject, int num, string season, int year, string category, string asgname)
         {
-            // SQL query that got all of the desired values:
-            //
-            // SELECT Department, Number, Season, Year, assCat.Name, ass.Name 
-            // FROM Team2.Assignments ass JOIN Team2AssignmentCategories assCat
-            // Join Team2.Classes class JOIN Team2.Courses course
-            // WHERE ass.Category = assCat.CategoryID
-            // AND assCat.class = class.classID
-            // AND class.offering = course.catalogID
+            // Check to see if the student is already enrolled
+            //var query =
+            //  from Co in db.Courses //COURSES to CLASSES
+            //  join Cl in db.Classes on Co.CatalogId equals Cl.Offering into join1
+
+            //  from j1 in join1 // CLASSES to ENROLLED
+            //  join E in db.Enrolled on j1.ClassId equals E.Class into join2
+
+            //  from j2 in join2
+            //  where Co.Department == subject // Ensure correct course department
+            //  && Co.Number == num // Ensure correct course number
+            //  && j1.Season == season // Ensure correct season
+            //  && j1.Year == year // Ensure class year
+            //  && j2.Student == uid // Ensure student is enrolled 
+
+            //  select j2.Student;
 
             var query =
                 from assgn in db.Assignments
-                where assgn.Name.Equals(asgname)
+                // where assgn.Name.Equals(asgname)
                 join assgnCat in db.AssignmentCategories on assgn.Category equals assgnCat.CategoryId into firstJoin
                 from j1 in firstJoin
-                where j1.Name.Equals(category)
+                // where j1.Name.Equals(category)
                 join cl in db.Classes on j1.Class equals cl.ClassId into secondJoin
                 from j2 in secondJoin
-                where j2.Season.Equals(season) & j2.Year.Equals(year)
+                // where j2.Season.Equals(season) & j2.Year.Equals(year)
                 join co in db.Courses on j2.Offering equals co.CatalogId into thirdJoin
                 from j3 in thirdJoin
-                where j3.Number.Equals(num) & j3.Department.Equals(subject)
+                // where j3.Number.Equals(num) & j3.Department.Equals(subject)
                 select new
                 {
                     subject = j3.Department,
@@ -193,6 +201,7 @@ namespace LMS.Controllers
                     asgname = assgn.Name
                 };
 
+            // Maybe see slides 16 page 11 for how to handle the Content() function?
             return Content(query.ToString());
 
         }
