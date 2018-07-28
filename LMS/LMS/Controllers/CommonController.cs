@@ -260,22 +260,12 @@ namespace LMS.Controllers
             // FROM Team2.Students stu JOIN Team2.Departments dep on stu.Major = dep.dID
             // WHERE stu.uID = "u0000002";
 
-            // THE FOLLOWING IS FOR TESTSING, TO SEE WHERE THIS DATA APPEARS:
-            //var test = new
-            //{
-            //    fname = "Ben",
-            //    lname = "Garding",
-            //    uid = "u0000002",
-            //    department = "ComputerScience"
-
-            //};
-            //return Json(test);
 
             // Try getting the information if thais uID is for a STUDENT.
             var studentQuery =
                 from stu in db.Students
-                where stu.UId.Equals(uid)
                 join dep in db.Departments on stu.Major equals dep.DId
+                where stu.UId == uid
                 select new
                 {
                     fname = stu.FirstName,
@@ -284,18 +274,10 @@ namespace LMS.Controllers
                     department = dep.Name
                 };
 
-            foreach (var x in studentQuery)
-            {
-                System.Diagnostics.Debug.WriteLine(x.fname);
-                System.Diagnostics.Debug.WriteLine(x.lname);
-                System.Diagnostics.Debug.WriteLine(x.uid);
-                System.Diagnostics.Debug.WriteLine(x.department);
-            }
-
             // If the uID was in fact for a student, return their info.
             if(studentQuery.Count() == 1)
             {
-                return Json(studentQuery);
+                return Json(studentQuery.ToArray().First());
             }
 
             // Try getting the information if this uID is for a PROFESSOR.
@@ -314,7 +296,7 @@ namespace LMS.Controllers
             // If the uID was in fact for a student, return their info.
             if (professorQuery.Count() == 1)
             {
-                return Json(professorQuery);
+                return Json(professorQuery.ToArray().First());
             }
 
             // Try getting the information if this uID is for an ADMINISTRATOR.
@@ -330,7 +312,7 @@ namespace LMS.Controllers
             // If the uID was in fact for a student, return their info.
             if (administratorQuery.Count() == 1)
             {
-                return Json(professorQuery);
+                return Json(professorQuery.ToArray().First());
             }
 
             // If we get this far in the code, that means the user ID doesn't exist
