@@ -221,32 +221,22 @@ namespace LMS.Controllers
             // JOIN Team2.Submissions subs ON subs.Assignment = assgn.assignmentID
             // WHERE uID = "u0000002";
 
-            /* NEEDS TO BE MODIFIED FOR THE ABOVE QUERY:
             var query =
-                from assgn in db.Assignments
-                where assgn.Name.Equals(asgname)
-                join assgnCat in db.AssignmentCategories on assgn.Category equals assgnCat.CategoryId into firstJoin
+                from stu in db.Students
+                where stu.UId.Equals(uid)
+                join enr in db.Enrolled on stu.UId equals enr.Student into firstJoin
                 from j1 in firstJoin
-                where j1.Name.Equals(category)
-                join cl in db.Classes on j1.Class equals cl.ClassId into secondJoin
+                join cla in db.Classes on j1.Class equals cla.ClassId into secondJoin
                 from j2 in secondJoin
-                where j2.Season.Equals(season) & j2.Year.Equals(year)
-                join co in db.Courses on j2.Offering equals co.CatalogId into thirdJoin
+                join assgncat in db.AssignmentCategories on j2.ClassId equals assgncat.Class into thirdJoin
                 from j3 in thirdJoin
-                where j3.Number.Equals(num) & j3.Department.Equals(subject)
-                select new
-                {
-                    subject = j3.Department,
-                    num = j3.Number,
-                    season = j2.Season,
-                    year = j2.Year,
-                    category = j1.Name,
-                    asgname = assgn.Name
-                };
-                */
+                join assgn in db.Assignments on j3.CategoryId equals assgn.Category into fourthJoin
+                from j4 in fourthJoin
+                join sub in db.Submissions on j4.AssignmentId equals sub.Assignment
+                select sub.TextContents;
 
-            //return Content(query.ToString());
-            return null;
+            return Content(query.ToString());
+
         }
 
 
