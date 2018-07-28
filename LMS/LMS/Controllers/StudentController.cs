@@ -205,24 +205,32 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = {true/false}. False if the student is already enrolled in the class.</returns>
         public IActionResult Enroll(string subject, int num, string season, int year, string uid)
         {
-            bool success = false;
+        
+            // Check to see if the student is already enrolled
             var query =
-              from Co in db.Courses
-              where Co.Number == num && Co.Department == subject
-              join Cl in db.Classes
-              on Co.CatalogId equals Cl.Offering into join1
-              from j1 in join1
-              where j1.Season == season && j1.Year == year
-              join E in db.Enrolled
-              on j1.ClassId equals E.Class into join2
+              from Co in db.Courses //COURSES to CLASSES
+              join Cl in db.Classes on Co.CatalogId equals Cl.Offering into join1
+              
+              from j1 in join1 // CLASSES to ENROLLED
+              join E in db.Enrolled on j1.ClassId equals E.Class into join2
+
               from j2 in join2
+              where Co.Department == subject // Ensure correct course department
+              && Co.Number == num // Ensure correct course number
+              && j1.Season == season // Ensure correct season
+              && j1.Year == year // Ensure class year
+              && j2.Student == uid // Ensure student is enrolled 
+
               select j2.Student;
 
-            if (query.Contains(uid))
+            // If the student's already enrolled, return a false success
+            if (query.Count() == 1)
             {
-                return Json(success);
+                var alreadyRegistered = new { success = false };
+                return Json(alreadyRegistered);
             }
 
+            // If we're here, then student is not currently enrolled in course
             Enrolled new_enr = new Enrolled();
             new_enr.Student = uid;
             var query2 =
@@ -239,11 +247,12 @@ namespace LMS.Controllers
             try
             {
                 db.SaveChanges();
-                success = true;
             }
             catch { }
 
-            return Json(success);
+            // Registration complete, so return
+            var successfullyRegistered = new { success = true };
+            return Json(successfullyRegistered);
         }
 
         /// <summary>
