@@ -222,8 +222,7 @@ namespace LMS.Controllers
             // WHERE uID = "u0000002";
 
             var query =
-                from stu in db.Students
-                where stu.UId.Equals(uid)
+                from stu in db.Students where stu.UId.Equals(uid)
                 join enr in db.Enrolled on stu.UId equals enr.Student into firstJoin
                 from j1 in firstJoin
                 join cla in db.Classes on j1.Class equals cla.ClassId into secondJoin
@@ -255,8 +254,24 @@ namespace LMS.Controllers
         /// <returns>The user JSON object or an object containing {success: false} if the user doesn't exist</returns>
         public IActionResult GetUser(string uid)
         {
+            // SQL query that got all of the desired values:
+            //
+            // SELECT Uid, FirstName, LastName, dep.Name
+            // FROM Team2.Students stu JOIN Team2.Departments dep on stu.Major = dep.dID
+            // WHERE stu.uID = "u0000002";
 
-            // Try getting the information if this uID is for a STUDENT.
+            // THE FOLLOWING IS FOR TESTSING, TO SEE WHERE THIS DATA APPEARS:
+            //var test = new
+            //{
+            //    fname = "Ben",
+            //    lname = "Garding",
+            //    uid = "u0000002",
+            //    department = "ComputerScience"
+
+            //};
+            //return Json(test);
+
+            // Try getting the information if thais uID is for a STUDENT.
             var studentQuery =
                 from stu in db.Students
                 where stu.UId.Equals(uid)
@@ -269,8 +284,16 @@ namespace LMS.Controllers
                     department = dep.Name
                 };
 
+            foreach (var x in studentQuery)
+            {
+                System.Diagnostics.Debug.WriteLine(x.fname);
+                System.Diagnostics.Debug.WriteLine(x.lname);
+                System.Diagnostics.Debug.WriteLine(x.uid);
+                System.Diagnostics.Debug.WriteLine(x.department);
+            }
+
             // If the uID was in fact for a student, return their info.
-            if (studentQuery.Count() == 1)
+            if(studentQuery.Count() == 1)
             {
                 return Json(studentQuery);
             }
