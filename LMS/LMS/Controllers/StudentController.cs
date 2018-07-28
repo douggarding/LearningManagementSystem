@@ -106,37 +106,38 @@ namespace LMS.Controllers
         public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
         {
             var query =
-              from S in db.Students
+              from S in db.Students // STUDENTS to ENROLLED
               join E in db.Enrolled on S.UId equals E.Student into join1
 
-              from j1 in join1
-              //where j1.Class == num
+              from j1 in join1 // ENROLLED to CLASSES
               join Cl in db.Classes on j1.Class equals Cl.ClassId into join2
 
-              from j2 in join2
-              //where j2.Season == season && j2.Year == year
-              join AC in db.AssignmentCategories on j2.ClassId equals AC.Class into join3
-              from j3 in join3
-              join ASG in db.Assignments
-              on j3.CategoryId equals ASG.Category into join4
-              from j4 in join4
-              join SUB in db.Submissions
-              on j4.AssignmentId equals SUB.Assignment
-              where S.UId == uid
-              select new {
-                  aname = j4.Name,
-                  cname = j3.Name,
-                  due = j4.Due,
-                  score = j4.Points
-              };
+              from j2 in join2 // CLASSES to COURSES
+              join Co in db.Courses on j2.Offering equals Co.CatalogId into join3
 
-            foreach (var x in query)
-            {
-                System.Diagnostics.Debug.WriteLine(x.aname);
-                System.Diagnostics.Debug.WriteLine(x.cname);
-                System.Diagnostics.Debug.WriteLine(x.due);
-                System.Diagnostics.Debug.WriteLine(x.score);
-            }
+              from j3 in join3 // CLASSES to ASSIGNMENT CATEGORIES
+              join AC in db.AssignmentCategories on j2.ClassId equals AC.Class into join4
+
+              from j4 in join4 // ASSIGNMENT CATEGORIES to ASSIGNMENTS
+              join ASG in db.Assignments on j4.CategoryId equals ASG.Category into join5
+
+              from j5 in join5// SUBMISSIONS to ASSIGNMENTS 
+              join SUB in db.Submissions on j5.AssignmentId equals SUB.Assignment into join6
+
+              from j6 in join6.DefaultIfEmpty() // (SUBMISSIONS needs to be left joined to account for null submissions)
+
+              where S.UId == uid // Ensure correct Student
+              && j3.Department == subject // Ensure correct subject (e.g.: CS)
+              && j3.Number == num // Ensure correct course number (e.g.: 1410)
+              && j2.Season == season // Ensure correct season (e.g.: Fall)
+              && j2.Year == year // Ensure correct year
+
+              select new {
+                  aname = j5.Name,
+                  cname = j4.Name,
+                  due = j5.Due,
+                  score = j6.Score // Okay if null
+              };
 
             return Json(query.ToArray());
         }
