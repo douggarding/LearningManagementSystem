@@ -575,11 +575,11 @@ namespace LMS.Controllers
             string nextID = "";
 
             // FOR NOW, GENERATE A RANDOM NUMBER
-            Random rnd = new Random();
-            int randomID = rnd.Next(0, 9999999);
-            nextID += randomID;
+            //Random rnd = new Random();
+            //int randomID = rnd.Next(0, 9999999);
+            //nextID += randomID;
 
-            /*
+            
             // Turn the user ID's into an ordered list of just numbers 
             List<int> userIDNumbers = new List<int>();
             for (int i = 0; i < userIDs.Count; i++)
@@ -615,7 +615,7 @@ namespace LMS.Controllers
             {
                 nextID = "0" + nextID;
             }
-            */
+            
 
             // Add 'u' to the front of ID and return
             return "u" + nextID;
