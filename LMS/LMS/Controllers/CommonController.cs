@@ -182,7 +182,6 @@ namespace LMS.Controllers
               && j3.Name == asgname // Ensure correct assignment name
               select j3.Contents;
 
-            // Maybe see slides 16 page 11 for how to handle the Content() function?
             return Content(query.ToArray().First().ToString());
 
         }
@@ -202,29 +201,47 @@ namespace LMS.Controllers
         /// <returns>The submission text</returns>
         public IActionResult GetSubmissionText(string subject, int num, string season, int year, string category, string asgname, string uid)
         {
-            // Generated a SQL query that works:
-            // SELECT TextContents FROM Team2.Students stu
-            // JOIN Team2.Enrolled enr ON stu.uID = enr.Student
-            // JOIN Team2.Classes cla ON cla.classID = enr.Class
-            // JOIN Team2.AssignmentCategories assctg ON assctg.Class = cla.ClassID
-            // JOIN Team2.Assignments assgn ON assgn.Category = assctg.categoryID
-            // JOIN Team2.Submissions subs ON subs.Assignment = assgn.assignmentID
-            // WHERE uID = "u0000002";
 
             var query =
-                from stu in db.Students where stu.UId.Equals(uid)
+                from stu in db.Students // STUDENTS to ENROLLED
                 join enr in db.Enrolled on stu.UId equals enr.Student into firstJoin
-                from j1 in firstJoin
+
+                from j1 in firstJoin // ENROLLED to CLASSES
                 join cla in db.Classes on j1.Class equals cla.ClassId into secondJoin
-                from j2 in secondJoin
-                join assgncat in db.AssignmentCategories on j2.ClassId equals assgncat.Class into thirdJoin
-                from j3 in thirdJoin
-                join assgn in db.Assignments on j3.CategoryId equals assgn.Category into fourthJoin
-                from j4 in fourthJoin
-                join sub in db.Submissions on j4.AssignmentId equals sub.Assignment
+
+                from j2 in secondJoin // CLASSES to COURSE
+                join co in db.Courses on j2.Offering equals co.CatalogId into join3
+
+                from j3 in join3 // CLASSES to ASSIGNMENT CATEGORIES
+                join assgncat in db.AssignmentCategories on j2.ClassId equals assgncat.Class into join4
+
+                from j4 in join4 // ASSIGNMENT CATEGORIES to ASSIGNMENTS
+                join assgn in db.Assignments on j4.CategoryId equals assgn.Category into join5
+
+                from j5 in join5 // ASSIGNMENTS to SUBMISSIONS
+                join sub in db.Submissions on j5.AssignmentId equals sub.Assignment
+
+                where stu.UId == uid
+                && j2.Season == season
+                && j2.Year == year
+                && j3.Department == subject
+                && j3.Number == num
+                && j4.Name == category
+                && j5.Name == asgname
                 select sub.TextContents;
 
-            return Content(query.ToString());
+            // Should return an empty string of "" if a submission doesn't exist.
+            // NOTE: Our database also allows the content part of a submission to be null
+            // need a way to handle this, or potentially change database design and rescaffold
+            try
+            {
+                return Content(query.ToArray().First().ToString());
+            }
+            // If the above fails due to the field being null, function will return ""
+            catch (System.InvalidOperationException)
+            {
+                return Content("");
+            }
 
         }
 
@@ -265,7 +282,7 @@ namespace LMS.Controllers
                 };
 
             // If the uID was in fact for a student, return their info.
-            if(studentQuery.Count() == 1)
+            if (studentQuery.Count() == 1)
             {
                 return Json(studentQuery.ToArray().First());
             }
