@@ -232,7 +232,7 @@ namespace LMS.Controllers
 
             // Should return an empty string of "" if a submission doesn't exist.
             // NOTE: Our database also allows the content part of a submission to be null
-            // need a way to handle this, or potentially change database design and rescaffold
+            // The below should account for either a null 'TextContents' or a non-existent entry
             try
             {
                 return Content(query.ToArray().First().ToString());
