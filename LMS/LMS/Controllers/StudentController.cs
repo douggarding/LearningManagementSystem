@@ -248,12 +248,15 @@ namespace LMS.Controllers
             try
             {
                 db.SaveChanges();
+                // Registration complete, so return
+                var successfullyRegistered = new { success = true };
+                return Json(successfullyRegistered);
             }
-            catch { }
-
-            // Registration complete, so return
-            var successfullyRegistered = new { success = true };
-            return Json(successfullyRegistered);
+            catch // If the changes to the database fail
+            {
+                return Json(new { success = false });
+            }
+            
         }
 
         /// <summary>

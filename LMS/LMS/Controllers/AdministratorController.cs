@@ -63,7 +63,17 @@ namespace LMS.Controllers
         /// <returns></returns>
         public IActionResult GetProfessors(string subject)
         {
-            return null;
+            var query =
+                from prof in db.Professors
+                where prof.WorksIn == subject
+                select new
+                {
+                    lname = prof.LastName,
+                    fname = prof.FirstName,
+                    uid = prof.UId
+                };
+
+            return Json(query.ToArray());
         }
 
         /// <summary>
@@ -75,7 +85,56 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}. False if the course already exists, true otherwise.</returns>
         public IActionResult CreateCourse(string subject, int number, string name)
         {
-            return null;
+            // Return false if the course already exists
+            // Course is determined to exist if Department/Number already exist as a combination???
+            var doesCourseExistQuery =
+                from co in db.Courses
+                where co.Number == number
+                && co.Department == subject
+                select co.CatalogId;
+
+            if(doesCourseExistQuery.Count() > 0)
+            {
+                return Json(new { success = false});
+            }
+
+            // Perform query to find an ideal catalog ID for new course
+            var query =
+                from co in db.Courses
+                select co.CatalogId;
+
+            // Selects the smallest unused catalogID number to use as new catalogID
+            int[] queryArray = query.ToArray();
+            Array.Sort(queryArray);
+            int courseID = queryArray.Length;
+            for (int i = 0; i < query.Count(); i++)
+            {
+                if (queryArray[i] > i)
+                {
+                    courseID = i;
+                    break;
+                }
+            }
+
+            // Set up the Course
+            Models.LMSModels.Courses course = new Models.LMSModels.Courses();
+            course.Department = subject;
+            course.Number = number;
+            course.Name = name;
+            course.CatalogId = courseID;
+
+            // Insert the Course into the database
+            db.Courses.Add(course);
+            try
+            {
+                db.SaveChanges();
+                return Json(new { success = true });
+            }
+            catch // If inserting changes to database fails
+            {
+                return Json(new { success = false });
+            }
+
         }
 
         /// <summary>
