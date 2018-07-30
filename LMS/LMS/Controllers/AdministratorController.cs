@@ -151,7 +151,80 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}. False if another class occupies the same location during any time within the start-end range in the same semester.</returns>
         public IActionResult CreateClass(string subject, int number, string season, int year, DateTime start, DateTime end, string location, string instructor)
         {
-            return null;
+            // Grab any class that occupies the same time/location as new class
+            var existingClassQuery =
+                from cl in db.Classes
+                where cl.Location == location
+                && cl.Season == season
+                && cl.Year == year
+                select new
+                {
+                    start = cl.Start,
+                    end = cl.End
+                };
+
+            // If there is overlap of time with another class, return { success = false }
+            TimeSpan newClassStart = start.TimeOfDay;
+            TimeSpan newClassEnd = end.TimeOfDay;
+            foreach (var c in existingClassQuery)
+            {
+                if( (newClassEnd >= c.start && newClassEnd <= c.end) // Overlaps first part of old class
+                    || (newClassStart >= c.start && newClassStart <= c.end) // Overlaps second part of old class
+                    || (newClassStart >= c.start && newClassEnd <= c.end) ) // completely overlaps
+                {
+                    return Json(new { success = false });
+                }
+            }
+
+            // Get the class's catalogID
+            var catalogID =
+                from co in db.Courses
+                where co.Department == subject
+                && co.Number == number
+                select co.CatalogId;
+
+            // Perform query to find an ideal class ID for new course
+            var classes =
+                from cl in db.Classes
+                select cl.ClassId;
+
+            // Selects the smallest unused catalogID number to use as new catalogID
+            int[] classIDs = classes.ToArray();
+            Array.Sort(classIDs);
+            // +1 everywhere to account for fact that ClassId can't be <= 0
+            int classID = classIDs.Length+1;
+            for (int i = 0; i < classIDs.Count()+1; i++)
+            {
+                if (classIDs[i] > i+1)
+                {
+                    classID = i+1;
+                    break;
+                }
+            }
+
+            // Set up the Class
+            Models.LMSModels.Classes cls = new Models.LMSModels.Classes();
+            cls.ClassId = classID;
+            cls.Location = location; // If user failed to specify location (null), db insertion will fail.
+            cls.Start = start.TimeOfDay;
+            cls.End = end.TimeOfDay;
+            cls.Season = season;
+            cls.Year = year; // If user failed to enter year, will default to 0, wich our db will allow.
+            cls.TaughtBy = instructor;
+            cls.Offering = catalogID.First();
+
+            // Insert the Course into the database
+            db.Classes.Add(cls);
+            try
+            {
+                db.SaveChanges();
+                return Json(new { success = true });
+            }
+            catch // If inserting changes to database fails
+            {
+                return Json(new { success = false });
+            }
+
         }
 
     }
