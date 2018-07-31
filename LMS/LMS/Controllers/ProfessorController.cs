@@ -471,11 +471,25 @@ namespace LMS.Controllers
       foreach (var j4 in query)
       {
         j4.Score = score;
+        
       }
 
       try
       {
         db.SaveChanges();
+        var update_query =
+          from co in db.Courses // COURSES to CLASSES
+          join cl in db.Classes on co.CatalogId equals cl.Offering into join1
+          from j1 in join1
+          where co.Department == subject
+          && co.Number == num
+          && j1.Season == season
+          && j1.Year == year
+          select j1;
+        foreach(var j1 in update_query)
+        {
+          updateGrade(uid, j1.ClassId);
+        }
         return Json(new { success = true });
       }
       catch // If inserting changes to database fails
@@ -515,6 +529,11 @@ namespace LMS.Controllers
           };
 
       return Json(query.ToArray());
+    }
+
+    public void updateGrade(string uid, int classID)
+    {
+
     }
 
   }
