@@ -368,6 +368,23 @@ namespace LMS.Controllers
       try
       {
         db.SaveChanges();
+
+        var update_query =
+         from co in db.Courses // COURSES to CLASSES
+         join cl in db.Classes on co.CatalogId equals cl.Offering into join1
+         from j1 in join1
+         join E in db.Enrolled on j1.ClassId equals E.Class into join2
+         from j2 in join2
+         where co.Department == subject
+         && co.Number == num
+         && j1.Season == season
+         && j1.Year == year
+         select j2;
+
+        foreach (var j2 in update_query)
+        {
+          updateGrade(j2.Student, j2.Class);
+        }
         return Json(new { success = true });
       }
       catch // If inserting changes to database fails
@@ -471,12 +488,12 @@ namespace LMS.Controllers
       foreach (var j4 in query)
       {
         j4.Score = score;
-        
       }
 
       try
       {
         db.SaveChanges();
+
         var update_query =
           from co in db.Courses // COURSES to CLASSES
           join cl in db.Classes on co.CatalogId equals cl.Offering into join1
@@ -486,10 +503,12 @@ namespace LMS.Controllers
           && j1.Season == season
           && j1.Year == year
           select j1;
-        foreach(var j1 in update_query)
+
+        foreach (var j1 in update_query)
         {
           updateGrade(uid, j1.ClassId);
         }
+
         return Json(new { success = true });
       }
       catch // If inserting changes to database fails
@@ -530,11 +549,146 @@ namespace LMS.Controllers
 
       return Json(query.ToArray());
     }
-
+    /// <summary>
+    /// Updates the given student's grade for this class.
+    /// </summary>
+    /// <param name="uid"> the student's university ID</param>
+    /// <param name="classID"> the classes particular instance ID</param>
     public void updateGrade(string uid, int classID)
     {
+      // The grade of the class comes from the total over all the categories.
+      // Each category has 0 more assignments, from which the points are extracted.
+      // Each assignment has a submission by the student (or not), from which the score is obtained.
+      // The category weight determines its influence on the overall grade.
+      // The grade is then lettered based on the course syllabus. (provided)
+      // score comes from submissions, points comes from assignments
+      // grade comes from enrolled, weight comes from assignment categories.
 
+      double running_total = 0;
+      int tot_weights = 0;
+
+      var get_cats =
+        from AC in db.AssignmentCategories
+        where AC.Class == classID
+        select AC;
+
+      // Check each category for gradeable assignments
+      foreach (var AC in get_cats)
+      {
+        var get_asgns =
+          from agns in db.Assignments
+          where agns.Category == AC.CategoryId
+          select agns;
+
+        var weight = AC.Weight;
+        int tot_points = 0;
+        int tot_score = 0;
+
+        if (get_asgns.Count() > 0)
+        {
+          // This category will be included in determining the grade since it has assignments
+          tot_weights += weight;
+
+          // Go through all the assignments in this category
+          foreach (var agn in get_asgns)
+          {
+            tot_points += (int)agn.Points;
+
+            var get_sub =
+              from S in db.Submissions
+              where S.Assignment == agn.AssignmentId
+              && S.Student == uid
+              select new { score = S.Score == null ? 0 : S.Score };
+
+            tot_score += (int)get_sub.First().score;
+
+          }
+
+          running_total += (tot_score / tot_points) * weight;
+        }
+      }
+
+      double scale = 100 / tot_weights;
+      running_total *= scale;
+
+      string grade = ConvertToLetterGrade(running_total);
+
+      var query =
+        from E in db.Enrolled
+        where E.Class == classID && E.Student == uid
+        select E;
+
+      foreach (var G in query)
+      {
+        G.Grade = grade;
+      }
+
+      try
+      {
+        db.SaveChanges();
+      }
+      catch{  }
     }
 
+    /// <summary>
+    /// Turns a number-value grade into a letter grade.
+    /// </summary>
+    /// <param name="running_total"> Number value of grade. </param>
+    /// <returns></returns>
+    private string ConvertToLetterGrade(double running_total)
+    {
+      string grade = "";
+
+      if (running_total >= 93)
+      {
+        grade = "A";
+      }
+      else if (running_total >= 90)
+      {
+        grade = "A-";
+      }
+      else if (running_total >= 87)
+      {
+        grade = "B+";
+      }
+      else if (running_total >= 83)
+      {
+        grade = "B";
+      }
+      else if (running_total >= 80)
+      {
+        grade = "B-";
+      }
+      else if (running_total >= 77)
+      {
+        grade = "C+";
+      }
+      else if (running_total >= 73)
+      {
+        grade = "C";
+      }
+      else if (running_total >= 70)
+      {
+        grade = "C-";
+      }
+      else if (running_total >= 67)
+      {
+        grade = "D+";
+      }
+      else if (running_total >= 63)
+      {
+        grade = "D";
+      }
+      else if (running_total >= 60)
+      {
+        grade = "D-";
+      }
+      else
+      {
+        grade = "E";
+      }
+
+      return grade;
+    }
   }
 }
