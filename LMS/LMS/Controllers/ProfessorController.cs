@@ -561,7 +561,7 @@ namespace LMS.Controllers
             // grade comes from enrolled, weight comes from assignment categories.
 
             double running_total = 0;
-            int tot_weights = 0;
+            double tot_weights = 0;
 
             var get_cats =
               from AC in db.AssignmentCategories
