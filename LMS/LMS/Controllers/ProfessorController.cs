@@ -565,7 +565,7 @@ namespace LMS.Controllers
       // grade comes from enrolled, weight comes from assignment categories.
 
       double running_total = 0;
-      int tot_weights = 0;
+      float tot_weights = 0;
 
       var get_cats =
         from AC in db.AssignmentCategories
@@ -581,8 +581,8 @@ namespace LMS.Controllers
           select agns;
 
         var weight = AC.Weight;
-        int tot_points = 0;
-        int tot_score = 0;
+        float tot_points = 0;
+        float tot_score = 0;
 
         if (get_asgns.Count() > 0)
         {
@@ -600,12 +600,21 @@ namespace LMS.Controllers
               && S.Student == uid
               select new { score = S.Score == null ? 0 : S.Score };
 
-            tot_score += (int)get_sub.First().score;
+            if (get_sub.Count() > 0)
+            {
+              tot_score += (int)get_sub.First().score; // error occurs here when there are no submissions.
+            }
 
           }
 
           running_total += (tot_score / tot_points) * weight;
         }
+      }
+
+      // Avoid dividing by a 0. The grade'll be 0 anyways.
+      if(tot_weights == 0)
+      {
+        tot_weights = 1;
       }
 
       double scale = 100 / tot_weights;
