@@ -219,16 +219,17 @@ namespace LMS.Controllers
                 join assgn in db.Assignments on j4.CategoryId equals assgn.Category into join5
 
                 from j5 in join5 // ASSIGNMENTS to SUBMISSIONS
-                join sub in db.Submissions on j5.AssignmentId equals sub.Assignment
+                join sub in db.Submissions on j5.AssignmentId equals sub.Assignment into join6
 
-                where stu.UId == uid
-                && j2.Season == season
+                from j6 in join6
+                where j2.Season == season
                 && j2.Year == year
                 && j3.Department == subject
                 && j3.Number == num
                 && j4.Name == category
                 && j5.Name == asgname
-                select sub.TextContents;
+                && j6.Student == uid
+                select j6.TextContents;
 
             // Should return an empty string of "" if a submission doesn't exist.
             // NOTE: Our database also allows the content part of a submission to be null
