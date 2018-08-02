@@ -132,7 +132,8 @@ namespace LMS.Controllers
               && j2.Season == season // Ensure correct season (e.g.: Fall)
               && j2.Year == year // Ensure correct year
 
-              select new {
+              select new
+              {
                   aname = j5.Name,
                   cname = j4.Name,
                   due = j5.Due,
@@ -147,6 +148,12 @@ namespace LMS.Controllers
         /// Adds a submission to the given assignment for the given student
         /// The submission should use the current time as its DateTime
         /// You can get the current time with DateTime.Now
+        /// 
+        /// If the student has already has a submission, the old submission 
+        /// will be overwritten only if the submission has not been graded. 
+        /// Because submissions have a score of 0 by default, it is possible 
+        /// that the submission was actually graded and recieved a zero. We 
+        /// still made the design decision to allow a resubmission in this case.
         /// </summary>
         /// <param name="subject">The course subject abbreviation</param>
         /// <param name="num">The course number</param>
@@ -159,40 +166,100 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}</returns>
         public IActionResult SubmitAssignmentText(string subject, int num, string season, int year, string category, string asgname, string uid, string contents)
         {
-            Submissions new_sub = new Submissions();
-            new_sub.Score = 0;
-            new_sub.TextContents = contents;
-            new_sub.Time = DateTime.Now;
-            new_sub.Student = uid;
-            var query =
-              from Co in db.Courses
-              where Co.Department == subject && Co.Number == num
-              join Cl in db.Classes
-              on Co.CatalogId equals Cl.Offering into join1
-              from j1 in join1
-              where j1.Year == year && j1.Season == season
-              join AC in db.AssignmentCategories
-              on j1.ClassId equals AC.Class into join2
-              from j2 in join2
-              where j2.Name == category
-              join ASG in db.Assignments
-              on j2.CategoryId equals ASG.Category into join3
+            // Get this student's submission
+            var submissionQuery =
+              from Co in db.Courses // COURSES to CLASSES
+              join Cl in db.Classes on Co.CatalogId equals Cl.Offering into join1
+
+              from j1 in join1 // CLASSES to ASSIGNMENT CATEGORIES
+              join AC in db.AssignmentCategories on j1.ClassId equals AC.Class into join2
+
+              from j2 in join2 // ASSIGNMENT CATEGORIES to ASSIGNMENTS
+              join ASG in db.Assignments on j2.CategoryId equals ASG.Category into join3
+
+              from j3 in join3 // ASSIGNMENTS to SUBMISSIONS
+              join sub in db.Submissions on j3.AssignmentId equals sub.Assignment into join4
+
+              from j4 in join4
+              where Co.Department == subject
+              && Co.Number == num
+              && j1.Year == year
+              && j1.Season == season
+              && j2.Name == category
+              && j3.Name == asgname
+              && j4.Student == uid
+
+              select j4;
+
+            // If this student already had a submission
+            if (submissionQuery.Count() == 1)
+            {
+                var submission = submissionQuery.First();
+                // Submission has not been graded, can be resubmitted
+                if (submission.Score == 0)
+                {
+                    submission.TextContents = contents;
+                    submission.Time = DateTime.Now;
+
+                    // Update the database with the changes
+                    try
+                    {
+                        db.SaveChanges();
+                        return (Json(new { success = true }));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        return (Json(new { success = true }));
+                    }
+                }
+
+                // Submission already graded, can't resubmit.
+                return Json(new { success = false });
+            }
+
+            // If here, there is no previous submission, so create one
+            // Get the assignmentID to use on the submission
+            var assignmentIDquery =
+              from Co in db.Courses // COURSES to CLASSES
+              join Cl in db.Classes on Co.CatalogId equals Cl.Offering into join1
+
+              from j1 in join1 // CLASSES to ASSIGNMENT CATEGORIES
+              join AC in db.AssignmentCategories on j1.ClassId equals AC.Class into join2
+
+              from j2 in join2 // ASSIGNMENT CATEGORIES to ASSIGNMENTS
+              join ASG in db.Assignments on j2.CategoryId equals ASG.Category into join3
+
               from j3 in join3
-              where j3.Name == asgname
+              where Co.Department == subject
+              && Co.Number == num
+              && j1.Year == year
+              && j1.Season == season
+              && j2.Name == category
+              && j3.Name == asgname
+
               select j3.AssignmentId;
 
-            new_sub.Assignment = query.First();
-            db.Submissions.Add(new_sub);
+            // Create the new submission
+            Submissions newSubmission = new Submissions();
+            newSubmission.Assignment = assignmentIDquery.First();
+            newSubmission.Student = uid;
+            newSubmission.Score = 0;
+            newSubmission.TextContents = contents;
+            newSubmission.Time = DateTime.Now;
+            db.Submissions.Add(newSubmission);
+
             try
             {
                 db.SaveChanges();
-                var successfullySubmitted = new { success = true };
-                return (Json(successfullySubmitted));
+                return (Json(new { success = true }));
             }
-            catch { }
+            catch
+            {
+                return Json(new { success = false });
+            }
 
-            var submissionFailure = new { success = false };
-            return Json(submissionFailure);
+
         }
 
         /// <summary>
@@ -206,12 +273,12 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = {true/false}. False if the student is already enrolled in the class.</returns>
         public IActionResult Enroll(string subject, int num, string season, int year, string uid)
         {
-        
+
             // Check to see if the student is already enrolled
             var query =
               from Co in db.Courses //COURSES to CLASSES
               join Cl in db.Classes on Co.CatalogId equals Cl.Offering into join1
-              
+
               from j1 in join1 // CLASSES to ENROLLED
               join E in db.Enrolled on j1.ClassId equals E.Class into join2
 
@@ -256,7 +323,7 @@ namespace LMS.Controllers
             {
                 return Json(new { success = false });
             }
-            
+
         }
 
         /// <summary>
