@@ -174,10 +174,10 @@ namespace LMS.Controllers
                     && j2.Name == category
                     select new
                     {
-                         aname = j3.Name,
-                         cname = j2.Name,
-                         due = j3.Due,
-                         submissions = (from sub in db.Submissions where sub.Assignment == j3.AssignmentId select sub).Count()
+                        aname = j3.Name,
+                        cname = j2.Name,
+                        due = j3.Due,
+                        submissions = (from sub in db.Submissions where sub.Assignment == j3.AssignmentId select sub).Count()
                     };
 
                 return Json(query.ToArray());
@@ -261,15 +261,12 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false} </returns>
         public IActionResult CreateAssignmentCategory(string subject, int num, string season, int year, string category, int catweight)
         {
-            // NOTE: I FEEL LIKE THERE IS NOT ENOUGH INFO PASSED IN TO 
-            // SPECIFY A SPECIFIC CLASS. THERE COULD BE MORE THAN ONE CLASS
-            // WITH A SPECIFIC SUBJECT/NUMBER, SEASON, AND YEAR.
-            // HOW DO WE ACCOUNT FOR THIS?
-
+            // Get the class ID to be associated with this assignment category
             var classIDquery =
-                from co in db.Courses
+                from co in db.Courses // Courses to Classes
                 join cl in db.Classes on co.CatalogId equals cl.Offering into join1
 
+                // Get Class ID
                 from j1 in join1
                 where co.Department == subject
                 && co.Number == num
@@ -277,8 +274,39 @@ namespace LMS.Controllers
                 && j1.Year == year
                 select j1.ClassId;
 
+            // Grab all the assignmentCategory IDs
+            var categoryIDs =
+                from cat in db.AssignmentCategories // Courses to Classes
+                select cat.CategoryId;
+
+
+            // Turn the user ID's into an ordered list of just numbers 
+            int[] categoryIDnums = categoryIDs.ToArray();
+            Array.Sort(categoryIDnums);
+
+            int newCategoryNumber = 0;
+            // If there are no gaps in the uID numbers, use next sequential number
+            if (categoryIDnums[categoryIDs.Count() - 1] == categoryIDnums.Count() - 1)
+            {
+                newCategoryNumber = categoryIDnums.Count();
+            }
+            // Otherwise find a gap in the numbers for which to create a new ID
+            else
+            {
+                for (int i = 0; i < categoryIDnums.Count(); i++)
+                {
+                    if (i < categoryIDnums[i]) // Then we found a skipped ID number
+                    {
+                        newCategoryNumber = i;
+                        break;
+                    }
+                }
+            }
+
+           
             // Set up the Category
             Models.LMSModels.AssignmentCategories assignCategory = new Models.LMSModels.AssignmentCategories();
+            assignCategory.CategoryId = newCategoryNumber;
             assignCategory.Name = category;
             assignCategory.Weight = catweight;
             assignCategory.Class = classIDquery.ToArray().First();
